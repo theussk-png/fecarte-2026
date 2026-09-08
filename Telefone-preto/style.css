@@ -1,1 +1,32 @@
-
+* {margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+    min-height: 100vh;
+    background-color: #5f0606;
+    color: aliceblue;
+    border-color: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+.stage{
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    background: linear-gradient(180deg, var(--bg2), #0c0c0f);
+    border: 1px solid #232228;
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px #000, 0 30px 80px -20px rgba(0,0,0,0.9), 0 0 120px rgba(139,0,0,0.05);
+    padding: 0;
+    overflow: hidden;
+}
+#botoes button {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+}
