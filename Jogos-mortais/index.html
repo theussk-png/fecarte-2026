@@ -1,114 +1,101 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
-    <title>JOGOS MORTAIS</title>
+    <title>JOGOS MORTAIS // JOGO FINAL</title>
 </head>
 
 <body>
-
     <div class="vinheta"></div>
     <video src="imagens/estatica.mp4" class="estatica"></video>
+    <audio id="musica" src="audios/leberch-psychological-horror-520373.mp3" loop></audio>
 
     <main id="interface" class="tv">
-
-        <div class="tv-antena"></div>
         <div class="tv-tela">
             <div class="tela-conteudo">
 
                 <section id="inicio" class="tela-cena">
-                    <h1>JOGOS<br>MORTAIS</h1>
+                    <h1>JOGOS<br><span>MORTAIS</span></h1>
                     <div class="linha-sinal"></div>
-                    <p class="instrucao">Antes de começarmos, diga seu nome.</p>
+                    <p class="instrucao">Faça-me um favor, diga seu nome.</p>
                     <input id="nome" type="text" maxlength="20" autocomplete="off" placeholder="SEU NOME">
-                    <button id="comecar" class="botao" type="button">CONTINUAR</button>
+                    <button id="comecar" class="botao botao-principal" type="button">CONTINUAR</button>
+                    <p class="aviso">Morrer ou viver, a escolha é sua.</p>
                 </section>
 
                 <section id="menu" class="tela-cena escondida">
-                    <h1>JOGOS<br>MORTAIS</h1>
+                    <h1>JOGOS<br><span>MORTAIS</span></h1>
                     <div class="linha-sinal"></div>
-                    <p class="subtitulo">Uma história sobre escolhas, culpa e consequências.</p>
-
+                    <p class="subtitulo">Uma experiência sobre escolhas, culpa e consequências.</p>
                     <div class="painel-menu">
                         <div><span>SUJEITO</span>
                             <p id="nomeMenu">---</p>
                         </div>
-                        <div><span>ARQUIVO</span>
-                            <p>01</p>
+                        <div><span>LOCAL</span>
+                            <p>CONFIDENCIAL // SUBTERRÂNEO SALA 15</p>
                         </div>
                         <div><span>STATUS</span>
-                            <p>INCOMPLETO</p>
+                            <p>A INICIAR</p>
                         </div>
                     </div>
-
                     <div class="menu-botoes">
                         <button id="iniciarHistoria" class="botao botao-principal" type="button">INICIAR
                             HISTÓRIA</button>
                     </div>
+                    <p class="aviso">O relógio só começa quando o jogo começar.</p>
                 </section>
 
                 <section id="jogo" class="tela-cena escondida">
-
                     <div class="cenario-banheiro">
                         <div class="azulejos"></div>
-
-                        <div class="luminaria">
-                            <span></span>
-                        </div>
-
-                        <div class="tubulacao">
-                            <span></span><span></span>
-                        </div>
-
-                        <div class="espelho-quebrado">
-                        </div>
-
+                        <div class="luminaria"><span></span></div>
+                        <div class="espelho-quebrado"><span></span></div>
                         <div class="pia">
                             <div class="pia-torneira"></div>
                             <div class="pia-bacia"></div>
                         </div>
-
-                        <div class="canos-chao">
-                            <span></span><span></span>
-                        </div>
-
-                        <div class="bancada">
-                        </div>
-
-                        <div class="ralo">
-                            <i></i>
-                        </div>
-
+                        <div class="canos-chao"><span></span><span></span></div>
+                        <div class="bancada"></div>
+                        <div class="ralo"><i></i></div>
+                        <div class="quadro-eletrico"><i></i><b></b></div>
+                        <div class="porta-cena"><i></i></div>
                         <div class="chao"></div>
-                        <div class="luz-vermelha"></div>
                         <div class="sombra-porta"></div>
                     </div>
 
-                    <div class="camera-seguranca">● REC</div>
-
-                    <div class="cabecalho-jogo">
-                        <p id="capitulo">ARQUIVO 01</p>
+                    <header class="cabecalho-jogo">
+                        <div>
+                            <p id="capitulo">ARQUIVO</p>
+                            SUJEITO // <span id="nomeHUD">---</span>
+                        </div>
                         <div class="timer-interface">
                             <span class="timer-label">TEMPO</span>
                             <span id="timerJogo">02:00</span>
                         </div>
-                    </div>
+                    </header>
 
                     <div class="identificacao-cena">
-                        <span>LOCAL // DESCONHECIDO</span>
+                        <span>LOCAL CONFIDENCIAL // SUBTERRÂNEO SALA 15</span>
                         <i></i>
                         <span id="statusCena">SINAL ESTÁVEL</span>
+                    </div>
+
+                    <div class="hud-inventario">
+                        <span class="hud-label">REGISTROS</span>
+                        <div id="itemChave" class="hud-item">CHAVE <b>—</b></div>
+                        <div id="itemSegredo" class="hud-item">PISTA <b>—</b></div>
+                        <div id="itemLuz" class="hud-item">ENERGIA <b>ON</b></div>
                     </div>
 
                     <div id="tituloCena"></div>
 
                     <div id="areaHistoria" class="area-historia">
                         <div class="dialogo-meta">
-                            <span>NARRADOR</span>
+                            <span id="tipoNarrador">NARRADOR</span>
                             <span id="indicadorMensagem">01</span>
                         </div>
                         <p id="texto"></p>
@@ -127,15 +114,7 @@
             </div>
         </div>
 
-        <div class="tv-controles">
-            <button>⏮</button>
-            <button id="play">▶</button>
-            <button>⏭</button>
-            <button>♬</button>
-        </div>
-        <div class="tv-led"></div>
     </main>
-
 </body>
 
 </html>
