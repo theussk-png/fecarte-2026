@@ -1,345 +1,416 @@
-
 const interfaceTV = document.getElementById("interface");
 const inicio = document.getElementById("inicio");
 const menu = document.getElementById("menu");
 const jogo = document.getElementById("jogo");
-
 const nomeInput = document.getElementById("nome");
 const comecar = document.getElementById("comecar");
 const iniciarHistoria = document.getElementById("iniciarHistoria");
-
 const nomeMenu = document.getElementById("nomeMenu");
-
+const nomeHUD = document.getElementById("nomeHUD");
 const texto = document.getElementById("texto");
 const avancar = document.getElementById("avancar");
-const play = document.getElementById("play");
 const escolhas = document.getElementById("escolhas");
-
 const tituloCena = document.getElementById("tituloCena");
 const capitulo = document.getElementById("capitulo");
-const contadorCena = document.getElementById("contadorCena");
 const indicadorMensagem = document.getElementById("indicadorMensagem");
-
 const areaHistoria = document.getElementById("areaHistoria");
 const final = document.getElementById("final");
 const finalTexto = document.getElementById("finalTexto");
 const reiniciarFinal = document.getElementById("reiniciarFinal");
 const statusCena = document.getElementById("statusCena");
+const timerElement = document.getElementById("timerJogo");
+const itemChave = document.getElementById("itemChave");
+const itemSegredo = document.getElementById("itemSegredo");
+const itemLuz = document.getElementById("itemLuz");
+const tipoNarrador = document.getElementById("tipoNarrador");
+const musica = document.getElementById("musica");
+
+musica.volume = 0.3;
+document.getElementById("comecar").addEventListener("click", () => {
+    musica.play();
+});
 
 let nomeJogador = "";
 let cenaAtual = null;
 let indiceFala = 0;
 let escrevendo = false;
-let timer = null;
-let timerJogo = null;
+let intervaloTexto = null;
+let intervaloJogo = null;
 let tempoRestante = 120;
-let bloqueado = false;
-let numeroCena = 0;
 let timerIniciado = false;
+let numeroCena = 0;
+let encerrado = false;
+
+const estado = {
+    temChave: false,
+    temPista: false,
+    luzApagada: false,
+    portaAberta: false,
+    segredoVisto: false
+};
 
 const cenas = {
-
     despertar: {
-        titulo: "PRÓLOGO",
+        titulo: "O DESPERTAR",
         falas: [
-            "Você lentamente abre os olhos, com a cabeça doendo e sentindo-se atordoado.",
-            "Lentamente, percebe que está em um banheiro abandonado e sujo com uma corrente prendendo seu pé a um cano enferrujado.",
-            "Antes que você possa reagir, uma televisão posicionada pouco a frente se liga, revelando uma figura misteriosa interpretada por um boneco palido com olhos e bochechas vermelhas",
-            () => `Olá, ${nomeJogador}.`,
-            () => `${nomeJogador}, quero que preste atenção: Alguns são tão ingratos por estarem vivos, mas você não, não mais.`,
-            "Eu quero jogar um jogo.",
-            "Em dois minutos um gás tóxico presente nas ventilações da sala será liberado e você sufocará até sua morte.",
-            "Você tem esse tempo para achar uma forma de se libertar e destrancar a porta.",
-            () => `Viver ou morrer, ${nomeJogador}, a escolha é sua.`,
+            "Você abre os olhos. A primeira coisa que sente é o frio do piso contra seu rosto. Assustado, você rapidamente se levanta.",
+            "O lugar parece um banheiro abandonado: azulejos rachados, canos expostos e uma luminaria que falha acima da sua cabeça.",
+            "Ainda atordoado, você percebe que seu tornozelo está preso a uma corrente curta. A outra ponta desaparece em um cano preso ao chão.",
+            "Uma televisão antiga, do outro lado da sala, liga sozinha.",
+            () => `Olá, ${nomeJogador}. Eu quero jogar um jogo.`,
+            () => `${nomeJogador}, quero que preste atenção no que tenho a dizer. Alguns são tão ingratos por estarem vivos, mas você não, não mais.`,
+            "Em dois minutos, o sistema de ventilação desta sala será ativado. Você não precisa entender o motivo. Precisa apenas sair. A chave, a energia e a porta fazem parte do mesmo problema. Observe antes de agir.",
+            () => `Viver ou morrer, ${nomeJogador}. A escolha ainda é sua.`,
             "Que o jogo comece."
         ],
         escolhas: [
-            { texto: "OBSERVAR O AMBIENTE", proxima: "ambiente" },
-            { texto: "IR ATÉ A BANCADA PRÓXIMA", proxima: "bancada" },
-            { texto: "PUXAR A CORRENTE", proxima: "corrente" }
+            { texto: "OBSERVAR A SALA", proxima: "ambiente" },
+            { texto: "PUXAR A CORRENTE", proxima: "corrente" },
+            { texto: "IR ATÉ A BANCADA", proxima: "bancada" }
         ]
     },
 
     ambiente: {
-        titulo: "A SALA",
+        titulo: "O INFERNO",
         falas: [
-            "Você decide observar o ambiente antes de fazer qualquer coisa.",
-            "A porta para a saída está à sua esquerda e há uma pia a sua direita.",
-            "Uma televisão antiga está posicionada no centro da sala.",
-            "No chão existe uma pequena chave.",
-            "Um pouco a frente existe uma bancada com ferramentas e acima dela uma câmera te observando.",
-            "Além disso, há um interruptor de luz atrás de você.",
+            "Você força os olhos a agirem mesmo contra a luz.",
+            "Há uma porta metálica à esquerda, uma pia à direita e uma bancada cheia de objetos.",
+            "Um pequeno quadro elétrico está preso à parede. A lâmpada pisca sempre que ele estala.",
+            "No espelho quebrado existe uma mancha escura que parece esconder alguma coisa.",
+            "Abaixo da pia, uma tampa de ralo está levemente deslocada.",
+            "Você percebe uma coisa importante: a sala foi preparada para ser observada."
         ],
         escolhas: [
-            { texto: "PEGAR E USAR A CHAVE", proxima: "chave" },
-            { texto: "IR ATÉ A BANCADA PRÓXIMA", proxima: "bancada" },
-            { texto: "PUXAR A CORRENTE", proxima: "corrente" },
-            { texto: "DESLIGAR AS LUZES", proxima: "escuro" }
-        ]
-    },
-
-    bancada: {
-        titulo: "A BANCADA",
-        falas: [
-            "Há várias ferramentas na bancada. Um serrote, um martelo e uma machadinha.",
-            "Todas em péssimas condições. Inúteis.",
-        ],
-        escolhas: [
-            { texto: "TENTAR QUEBRAR A CORRENTE", proxima: "quebrar" },
+            { texto: "EXAMINAR O QUADRO ELÉTRICO", proxima: "quadro" },
+            { texto: "EXAMINAR O ESPELHO", proxima: "espelho" },
+            { texto: "PROCURAR ALGO NO RALO", proxima: "ralo" },
+            { texto: "TESTAR A PORTA", proxima: "porta" },
+            { texto: "PUXAR A CORRENTE", proxima: "corrente" }
         ]
     },
 
     corrente: {
         titulo: "A CORRENTE",
         falas: [
-            "Você tenta puxar a corrente com toda a sua força. Não há efeito.",
+            "Você puxa a corrente até sentir o metal vibrar no cano.",
+            "Nada. O encaixe foi feito para suportar muito mais força do que você consegue produzir.",
+            "No cadeado existe uma pequena gravação: 13.",
+            "Talvez não seja uma coincidência."
         ],
         escolhas: [
-            { texto: "OBSERVAR O AMBIENTE", proxima: "ambiente" },
-            { texto: "IR ATÉ A BANCADA PRÓXIMA", proxima: "bancada" },
+            { texto: "VOLTAR A OBSERVAR A SALA", proxima: "ambiente" },
+            { texto: "IR ATÉ A BANCADA", proxima: "bancada" }
         ]
     },
 
-    chave: {
-        titulo: "A CHAVE",
+    bancada: {
+        titulo: "A BANCADA",
         falas: [
-            "Você pega a chave do chão. Ela parece antiga.",
-            "Há uma pequena marca de quebra-cabeça gravada nela. Uma marca que geralmente aparece em cenas criminais do serial killer conhecido como Jigsaw.",
-            "Você tenta usar a chave para destrancar a corrente que prende seu pé. Não funciona."
+            "Você encontra um martelo, um pedaço de fio de cobre, uma fita isolante e um pequeno ímã.",
+            "As ferramentas maiores estão gastas demais para romper a corrente.",
+            "O ímã, porém, parece forte o bastante para alcançar algo preso em um lugar estreito."
         ],
         escolhas: [
-            { texto: "TENTAR ABRIR A PORTA", proxima: "abrir" },
+            { texto: "LEVAR O ÍMÃ ATÉ O RALO", proxima: "ralo" },
+            { texto: "LEVAR O FIO AO QUADRO ELÉTRICO", proxima: "quadro" },
+            { texto: "VOLTAR A OBSERVAR A SALA", proxima: "ambiente" }
         ]
     },
 
-    abrir: {
-        titulo: "A PORTA",
+    ralo: {
+        titulo: "O RALO",
         falas: [
-            "A porta abre com a chave que estava no chão.",
-            "Do lado de fora, você vê túneis pouco iluminados que levam à saída.",
-            "Você continua preso pela corrente no seu pé."
+            "Você se ajoelha e remove a tampa enferrujada.",
+            "Há algo metálico preso alguns centímetros abaixo.",
+            "Usando o ímã encontrado na bancada, você puxa o objeto para fora.",
+            "É uma chave pequena. No verso, há o mesmo número gravado no cadeado: 13."
         ],
+        aoEntrar() {
+            estado.temChave = true;
+            atualizarHUD();
+        },
         escolhas: [
-            { texto: "CHECAR A SI MESMO", proxima: "checar" }
+            { texto: "TENTAR A CHAVE NO CADEADO", proxima: "correnteAberta" },
+            { texto: "TESTAR A CHAVE NA PORTA", proxima: "porta" }
         ]
     },
 
-    quebrar: {
-        titulo: "AS FERRAMENTAS",
+    quadro: {
+        titulo: "O QUADRO ELÉTRICO",
         falas: [
-            "Você tenta quebrar a corrente enquanto seus olhos fervem e o desespero toma conta de você.",
-            "Entanto, nenhuma das ferramentas conseguem quebrar a corrente."
+            "O quadro está quase solto da parede.",
+            "Há dois disjuntores: iluminação e ventilação.",
+            "Um fio foi colocado de propósito entre os dois circuitos.",
+            "Você pode cortar a iluminação. A ventilação, porém, continuará funcionando.",
+            "A escuridão talvez revele algo que a luz esconde."
         ],
         escolhas: [
-            { texto: "OBSERVAR O AMBIENTE", proxima: "ambiente" },
-        ]
-    },
-
-    checar: {
-        titulo: "A FITA",
-        falas: [
-            "Você estava tão desesperado que não percebeu que havia um toca-fitas em seu bolso. Ao tocar a fita que havia dentro:",
-            () => `Olá novamente, ${nomeJogador}.`,
-            "Se procura pela sua chance de escapar, recomendo que procure no escuro.",
-        ],
-        escolhas: [
-            { texto: "DESLIGAR AS LUZES", proxima: "escuro" }
+            { texto: "DESLIGAR A ILUMINAÇÃO", proxima: "escuro" },
+            { texto: "NÃO MEXER E VOLTAR", proxima: "ambiente" }
         ]
     },
 
     escuro: {
-        titulo: "O ESCURO",
+        titulo: "APAGÃO",
         falas: [
-            "Assim que as luzes se apagam você percebe uma marcação em forma de X na parede ao seu lado.",
-            "Você quebra a parede na marcação e descobre uma caixa com uma foto sua ao lado de um antigo tio desaparecido.",
-            "Ao lado da foto uma chave.",
+            "A sala mergulha no escuro.",
+            "Por alguns segundos, você escuta apenas o zumbido da televisão.",
+            "Então uma luz vermelha de emergência acende.",
+            "No espelho aparece uma mensagem que não estava visível antes: 'A VERDADE ESTÁ ATRÁS DO VIDRO'."
         ],
+        aoEntrar() {
+            estado.luzApagada = true;
+            atualizarHUD();
+            jogo.classList.add("ambiente-escuro");
+        },
         escolhas: [
-            { texto: "LIBERTAR-SE", proxima: "libertar" }
+            { texto: "VOLTAR AO ESPELHO", proxima: "espelho" },
+            { texto: "VOLTAR AO QUADRO", proxima: "quadro" }
         ]
     },
 
-    libertar: {
-        titulo: "A LIBERTAÇÃO",
+    espelho: {
+        titulo: "O ESPELHO",
         falas: [
-            "Você tira a corrente e sai pela porta.",
-            "Ainda atordoado, você vaga pelos corredores até achar uma caixa sobre uma mesa que divide o corredor em dois.",
-            "Dentro da caixa um cartão escrito:",
-            () => `Olá, ${nomeJogador}. Se está lendo significa que conseguiu escapar. No entanto, o jogo ainda não acabou.`,
-            "Se quiser saber a verdade, siga a esquerda. Caso contrário, você pode sair daqui seguindo a direita.",
+            "Você passa a mão pelo vidro rachado.",
+            "Uma das rachaduras parece esconder uma pequena aba metálica.",
+            "Ao puxá-la, o espelho se desloca alguns centímetros e revela uma caixa estreita.",
+            "Dentro há uma fotografia antiga e um cartão com três palavras: 'NÃO CONFIE NELE'.",
+            "No verso da fotografia está escrito: SALA 13 // ARQUIVO 01."
         ],
+        aoEntrar() {
+            estado.temPista = true;
+            estado.segredoVisto = true;
+            atualizarHUD();
+        },
         escolhas: [
-            { texto: "A VERDADE", proxima: "esquerda" },
-            { texto: "SAIR", proxima: "final2" }
+            { texto: "ABRIR A CAIXA ESCONDIDA", proxima: "segredo" },
+            { texto: "VOLTAR À SALA", proxima: "ambiente" }
         ]
     },
 
-    esquerda: {
-        titulo: "A VERDADE",
+    segredo: {
+        titulo: "ARQUIVO 13",
         falas: [
-            "Seguindo, você se depara com uma grande porta. Ao abrir, você vê o escritório do homem por trás de tudo.",
-            "Com vários protótipos de armadilhas e jogos, a figura do homem aparece de fundo vestindo uma capa preta que esconde seu rosto.",
-            "Ele se aproxima e se revela como John Kramer, seu tio desaparecido após ter sido diagnosticado com câncer de cólon.",
-            "Ele te entrega um revólver com uma bala e pergunta se quer ter vingança ou virar seu pupilo."
+            "A fotografia mostra a mesma sala antes de ser abandonada.",
+            "No canto da imagem há uma pessoa usando o mesmo símbolo que aparece no seu cadeado.",
+            "Abaixo da fotografia, uma frase foi escrita à mão: 'A porta não é a saída. É o teste.'",
+            "Você encontra um cartão magnético escondido atrás da foto.",
+            "Talvez exista uma segunda saída."
         ],
         escolhas: [
-            { texto: "VINGAR-SE", proxima: "final3" },
-            { texto: "CURVAR-SE", proxima: "final4" }
+            { texto: "PROCURAR A SEGUNDA SAÍDA", proxima: "passagem" },
+            { texto: "IGNORAR E IR PARA A PORTA", proxima: "porta" }
         ]
     },
 
+    passagem: {
+        titulo: "A PASSAGEM",
+        falas: [
+            "Atrás da pia existe uma placa metálica quase invisível.",
+            "O cartão magnético destrava a placa.",
+            "Você encontra um corredor estreito, sem câmeras e sem a corrente presa ao chão.",
+            "No final existe uma saída de emergência e uma última gravação.",
+            "A gravação começa antes que você consiga decidir se deve ouvi-la."
+        ],
+        escolhas: [
+            { texto: "OUVIR A GRAVAÇÃO", proxima: "gravacao" },
+            { texto: "IR DIRETO PARA A SAÍDA", proxima: "final2" }
+        ]
+    },
+
+    gravacao: {
+        titulo: "A ÚLTIMA MENSAGEM",
+        falas: [
+            () => `A voz diz: "${nomeJogador}, se você chegou até aqui, descobriu o que eu queria esconder."`,
+            "O homem que preparou esta sala não queria apenas testar se você sobreviveria.",
+            "Ele queria descobrir se você seguiria instruções cegamente ou se procuraria uma saída por conta própria.",
+            "A gravação termina. Do outro lado da porta, a rua está silenciosa.",
+            "Você pode sair agora. O resto da verdade terá de ser descoberto por você."
+        ],
+        escolhas: [
+            { texto: "SAIR E ENCERRAR O JOGO", proxima: "final3" },
+            { texto: "VOLTAR PARA A SALA", proxima: "ambiente" }
+        ]
+    },
+
+    porta: {
+        titulo: "A PORTA",
+        falas: [
+            "A porta metálica tem uma fechadura antiga.",
+            "Sem uma chave, ela não se move.",
+            "Você percebe uma pequena abertura ao lado da maçaneta. Parece feita para uma chave muito específica."
+        ],
+        escolhas: [
+            { texto: "VOLTAR À SALA", proxima: "ambiente" },
+            { texto: "PROCURAR UMA CHAVE", proxima: "ralo" }
+        ]
+    },
+
+    correnteAberta: {
+        titulo: "O CADEADO",
+        falas: [
+            "A chave entra no cadeado.",
+            "Por um instante, nada acontece.",
+            "Então o mecanismo cede.",
+            "A corrente cai no chão.",
+            "Você está livre para chegar à porta."
+        ],
+        aoEntrar() {
+            estado.portaAberta = true;
+            atualizarHUD();
+            pararTimer();
+        },
+        escolhas: [
+            { texto: "ABRIR A PORTA E ESCAPAR", proxima: "final2" },
+            { texto: "PROCURAR A VERDADE ANTES DE SAIR", proxima: "ambiente" }
+        ]
+    },
 
     final1: {
-        titulo: "FIM 01 — FIM DE JOGO",
+        titulo: "FIM 01 // TEMPO ESGOTADO",
         final: {
-            titulo: "O TEMPO ACABOU",
-            texto: "O contador chega a zero. O gás é liberado e você morre sufocado. O jogo termina."
+            titulo: "O RELÓGIO CHEGOU A ZERO",
+            texto: "O sistema é ativado. A televisão apaga e a sala fica em silêncio. O arquivo termina antes que você encontre uma saída."
         }
     },
 
     final2: {
-        titulo: "FIM 02 — FUGA",
+        titulo: "FIM 02 // FUGA",
         final: {
-            titulo: "VOCÊ ESCAPOU",
-            texto: "Você escolhe a saída e deixa o local."
+            titulo: "VOCÊ SAIU",
+            texto: "A porta se abre para a rua. Você não sabe quem construiu a sala, nem por quê. Pela primeira vez desde que acordou, não há ninguém dizendo o que fazer."
         }
     },
 
     final3: {
-        titulo: "FIM 03 — VINGANÇA",
+        titulo: "FIM 03 // ARQUIVO 13",
         final: {
-            titulo: "A ESCOLHA DA VINGANÇA",
-            texto: "Você decide enfrentar John Kramer, o Jigsaw. Você escapa mas os assassinatos de Jigsaw continuam... Como?"
-        }
-    },
-
-    final4: {
-        titulo: "FIM 04 — O PUPILO",
-        final: {
-            titulo: "O NOVO PUPILO",
-            texto: "Você aceita a proposta de John Kramer. O jogo termina, mas uma nova etapa começa."
+            titulo: "A VERDADE FICA PARA TRÁS",
+            texto: "Você deixa o local levando apenas a fotografia e a certeza de que a sala fazia parte de algo maior. Atrás de você, a televisão continua ligada. O arquivo não terminou, apenas deixou de ser seu."
         }
     }
 };
 
 function obterFala() {
     const cena = cenas[cenaAtual];
-
-    if (!cena || indiceFala >= cena.falas.length) {
-        return "";
-    }
-
+    if (!cena || !cena.falas || indiceFala >= cena.falas.length) return "";
     const fala = cena.falas[indiceFala];
     return typeof fala === "function" ? fala() : fala;
 }
 
 function iniciarJogo() {
     const nome = nomeInput.value.trim();
-
-    if (nome.length === 0) {
-        nomeInput.value = "";
-        nomeInput.focus();
+    if (!nome) {
         nomeInput.classList.remove("erro");
         void nomeInput.offsetWidth;
         nomeInput.classList.add("erro");
-
-        setTimeout(() => nomeInput.classList.remove("erro"), 500);
+        nomeInput.focus();
         return;
     }
 
     nomeJogador = nome;
     nomeMenu.textContent = nomeJogador;
-
+    nomeHUD.textContent = nomeJogador.toUpperCase();
     inicio.classList.add("escondida");
     menu.classList.remove("escondida");
-
-    avancar.disabled = true;
-    texto.textContent = "";
-    escolhas.innerHTML = "";
 }
 
+function iniciarHistoriaJogo() {
+    pararTimer();
+    timerIniciado = false;
+    tempoRestante = 120;
+    encerrado = false;
+    resetarEstado();
+
+    menu.classList.add("escondida");
+    jogo.classList.remove("escondida");
+    interfaceTV.classList.add("modo-historia");
+    jogo.classList.remove("ambiente-escuro", "ambiente-tensao");
+
+    cenaAtual = "despertar";
+    indiceFala = 0;
+    numeroCena = 1;
+    escrevendo = false;
+
+    final.classList.add("escondida");
+    areaHistoria.classList.remove("escondida");
+    escolhas.classList.add("escondida");
+    escolhas.innerHTML = "";
+    tituloCena.textContent = cenas[cenaAtual].titulo;
+    atualizarHUD();
+    atualizarTimerVisual();
+    atualizarCabecalho();
+    avancar.disabled = false;
+    mostrarMensagem();
+}
+
+function resetarEstado() {
+    estado.temChave = false;
+    estado.temPista = false;
+    estado.luzApagada = false;
+    estado.portaAberta = false;
+    estado.segredoVisto = false;
+    atualizarHUD();
+}
+
+function atualizarHUD() {
+    itemChave.classList.toggle("ativo", estado.temChave);
+    itemChave.querySelector("b").textContent = estado.temChave ? "OK" : "—";
+    itemSegredo.classList.toggle("ativo", estado.temPista);
+    itemSegredo.querySelector("b").textContent = estado.temPista ? "OK" : "—";
+    itemLuz.classList.toggle("ativo", !estado.luzApagada);
+    itemLuz.querySelector("b").textContent = estado.luzApagada ? "OFF" : "ON";
+}
 
 function atualizarTimerVisual() {
-    const timerElement = document.getElementById("timerJogo");
-    if (!timerElement) return;
-
     const minutos = Math.floor(tempoRestante / 60);
     const segundos = tempoRestante % 60;
-
-    timerElement.textContent =
-        `${String(minutos).padStart(2, "0")}:${String(segundos).padStart(2, "0")}`;
-
-    timerElement.classList.toggle("timer-critico", tempoRestante <= 10);
+    timerElement.textContent = `${String(minutos).padStart(2, "0")}:${String(segundos).padStart(2, "0")}`;
+    timerElement.classList.toggle("timer-critico", timerIniciado && tempoRestante <= 20);
 }
 
-function iniciarTimerJogo() {
-    if (timerIniciado) return;
+function iniciarTimer() {
+    if (timerIniciado || encerrado) return;
 
     timerIniciado = true;
-    clearInterval(timerJogo);
-
     tempoRestante = 120;
     atualizarTimerVisual();
+    statusCena.textContent = "PROTOCOLO ATIVO";
+    jogo.classList.add("ambiente-tensao");
 
-    timerJogo = setInterval(() => {
+    intervaloJogo = setInterval(() => {
         tempoRestante--;
         atualizarTimerVisual();
 
         if (tempoRestante <= 0) {
-            pararTimerJogo();
-
+            pararTimer();
+            encerrado = true;
             cenaAtual = "final1";
             numeroCena++;
             tituloCena.textContent = cenas.final1.titulo;
-            atualizarCabecalho();
             mostrarFinal(cenas.final1.final);
         }
     }, 1000);
 }
 
-function pararTimerJogo() {
-    clearInterval(timerJogo);
-    timerJogo = null;
+function pararTimer() {
+    clearInterval(intervaloJogo);
+    intervaloJogo = null;
+    if (!encerrado) statusCena.textContent = "PROTOCOLO ENCERRADO";
 }
 
-function iniciarHistoriaJogo() {
-    menu.classList.add("escondida");
-    jogo.classList.remove("escondida");
-
-    interfaceTV.classList.add("modo-historia");
-
-    cenaAtual = "despertar";
-    indiceFala = 0;
-    numeroCena = 1;
-
-    escrevendo = false;
-    bloqueado = false;
-
-    clearInterval(timer);
-
-    final.classList.add("escondida");
-    finalTexto.textContent = "";
-
-    escolhas.innerHTML = "";
-    escolhas.classList.add("escondida");
-    areaHistoria.classList.remove("escondida");
-
-    tituloCena.textContent = cenas[cenaAtual].titulo;
-
-    atualizarCabecalho();
-
-    avancar.disabled = false;
-    mostrarMensagem();
+function iniciarCena(cena) {
+    if (typeof cena.aoEntrar === "function") cena.aoEntrar();
 }
+
 function atualizarCabecalho() {
-    capitulo.textContent = "ARQUIVO 01";
-    if (contadorCena) contadorCena.textContent = String(numeroCena).padStart(2, "0");
+    capitulo.textContent = `ARQUIVO 01 // ${String(numeroCena).padStart(2, "0")}`;
     indicadorMensagem.textContent = String(indiceFala + 1).padStart(2, "0");
 }
 
 function mostrarMensagem() {
     const cena = cenas[cenaAtual];
-
     if (!cena) return;
 
     if (indiceFala >= cena.falas.length) {
@@ -348,57 +419,47 @@ function mostrarMensagem() {
     }
 
     indicadorMensagem.textContent = String(indiceFala + 1).padStart(2, "0");
+    tipoNarrador.textContent = cenaAtual === "despertar" && indiceFala >= 3 ? "TRANSMISSÃO" : "NARRADOR";
     escreverMensagem(obterFala());
 }
 
 function verificarInicioTimer() {
-    if (
-        cenaAtual === "despertar" &&
-        indiceFala === cenas.despertar.falas.length - 1 &&
-        !timerIniciado
-    ) {
-        iniciarTimerJogo();
+    if (cenaAtual === "despertar" && indiceFala === cenas.despertar.falas.length - 1 && !timerIniciado) {
+        iniciarTimer();
     }
 }
 
 function escreverMensagem(mensagem) {
-    clearInterval(timer);
-
+    clearInterval(intervaloTexto);
     texto.textContent = "";
     escrevendo = true;
-    bloqueado = true;
-    play.textContent = "■";
+    avancar.disabled = false;
 
     let i = 0;
-
-    timer = setInterval(() => {
+    intervaloTexto = setInterval(() => {
         texto.textContent += mensagem.charAt(i);
         i++;
 
         if (i >= mensagem.length) {
-            clearInterval(timer);
+            clearInterval(intervaloTexto);
+            intervaloTexto = null;
             escrevendo = false;
-            bloqueado = false;
-            play.textContent = "▶";
             verificarInicioTimer();
         }
-    }, 28);
+    }, 22);
 }
 
 function completarMensagem() {
     if (!escrevendo) return;
-
-    clearInterval(timer);
-
+    clearInterval(intervaloTexto);
+    intervaloTexto = null;
     texto.textContent = obterFala();
     escrevendo = false;
-    bloqueado = false;
-    play.textContent = "▶";
     verificarInicioTimer();
 }
 
 function proximaMensagem() {
-    if (!cenaAtual || bloqueado && !escrevendo) return;
+    if (!cenaAtual || encerrado) return;
 
     if (escrevendo) {
         completarMensagem();
@@ -406,26 +467,24 @@ function proximaMensagem() {
     }
 
     const cena = cenas[cenaAtual];
+    if (!cena || !Array.isArray(cena.falas)) return;
+
     indiceFala++;
 
     if (indiceFala < cena.falas.length) {
         atualizarCabecalho();
         mostrarMensagem();
-        return;
+    } else {
+        mostrarEscolhasOuFinal();
     }
-
-    mostrarEscolhasOuFinal();
 }
 
 function mostrarEscolhasOuFinal() {
     const cena = cenas[cenaAtual];
-
     if (!cena) return;
 
-    clearInterval(timer);
+    clearInterval(intervaloTexto);
     escrevendo = false;
-    bloqueado = true;
-
     avancar.disabled = true;
 
     if (cena.final) {
@@ -433,7 +492,7 @@ function mostrarEscolhasOuFinal() {
         return;
     }
 
-    if (!cena.escolhas || cena.escolhas.length === 0) return;
+    if (!Array.isArray(cena.escolhas) || cena.escolhas.length === 0) return;
 
     areaHistoria.classList.add("escondida");
     escolhas.classList.remove("escondida");
@@ -441,43 +500,32 @@ function mostrarEscolhasOuFinal() {
 
     cena.escolhas.forEach((escolha, indice) => {
         const botao = document.createElement("button");
-
         botao.type = "button";
         botao.className = "escolha";
-        botao.textContent = `${String(indice + 1).padStart(2, "0")} // ${escolha.texto}`;
-
+        botao.innerHTML = `<span>${String(indice + 1).padStart(2, "0")}</span>${escolha.texto}`;
         botao.addEventListener("click", () => escolher(escolha.proxima));
-
         escolhas.appendChild(botao);
     });
 }
 
 function escolher(proximaCena) {
-    if (!cenas[proximaCena]) {
-        console.error("Cena não encontrada:", proximaCena);
+    if (encerrado || !cenas[proximaCena]) {
+        console.error("Transição inválida:", proximaCena);
         return;
     }
 
-    clearInterval(timer);
-
+    clearInterval(intervaloTexto);
     cenaAtual = proximaCena;
     numeroCena++;
     indiceFala = 0;
-
-    if (cenaAtual === "libertar") {
-        pararTimerJogo();
-    }
-
     escrevendo = false;
-    bloqueado = false;
 
     escolhas.innerHTML = "";
     escolhas.classList.add("escondida");
     areaHistoria.classList.remove("escondida");
-
     tituloCena.textContent = cenas[cenaAtual].titulo;
-
     atualizarCabecalho();
+    iniciarCena(cenas[cenaAtual]);
 
     if (cenas[cenaAtual].final) {
         mostrarFinal(cenas[cenaAtual].final);
@@ -489,59 +537,46 @@ function escolher(proximaCena) {
 }
 
 function mostrarFinal(dadosFinal) {
-    pararTimerJogo();
+    pararTimer();
+    encerrado = true;
+    clearInterval(intervaloTexto);
+    escrevendo = false;
     areaHistoria.classList.add("escondida");
     escolhas.classList.add("escondida");
     final.classList.remove("escondida");
-
-    finalTexto.innerHTML = `
-        <strong>${dadosFinal.titulo}</strong>
-        <br><br>
-        ${dadosFinal.texto}
-    `;
-
-    bloqueado = true;
+    finalTexto.innerHTML = `<strong>${dadosFinal.titulo}</strong><br><br>${dadosFinal.texto}`;
     avancar.disabled = true;
+    statusCena.textContent = "ARQUIVO ENCERRADO";
 }
 
 function reiniciar() {
-    pararTimerJogo();
+    clearInterval(intervaloTexto);
+    pararTimer();
     timerIniciado = false;
-    clearInterval(timer);
-
+    encerrado = false;
     cenaAtual = null;
     indiceFala = 0;
     numeroCena = 0;
     escrevendo = false;
-    bloqueado = false;
-
     texto.textContent = "";
     finalTexto.textContent = "";
     escolhas.innerHTML = "";
-
     final.classList.add("escondida");
     escolhas.classList.add("escondida");
     areaHistoria.classList.remove("escondida");
-
     jogo.className = "tela-cena escondida";
     interfaceTV.classList.remove("modo-historia");
-
     menu.classList.remove("escondida");
     inicio.classList.add("escondida");
-
-    avancar.disabled = true;
     nomeInput.focus();
+    tempoRestante = 120;
+    atualizarTimerVisual();
 }
+
 comecar.addEventListener("click", iniciarJogo);
 iniciarHistoria.addEventListener("click", iniciarHistoriaJogo);
-
-avancar.addEventListener("click", () => {
-    if (!avancar.disabled && cenaAtual) {
-        proximaMensagem();
-    }
-});
-
-if (reiniciarFinal) reiniciarFinal.addEventListener("click", reiniciar);
+avancar.addEventListener("click", proximaMensagem);
+reiniciarFinal.addEventListener("click", reiniciar);
 nomeInput.addEventListener("keydown", event => {
     if (event.key === "Enter") iniciarJogo();
 });
