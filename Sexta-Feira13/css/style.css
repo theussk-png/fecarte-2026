@@ -54,6 +54,28 @@ a:focus-visible {
 /* ==========================================================================
    ATMOSFERA DE FUNDO
    ========================================================================== */
+
+#home-button {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  font-family: inherit;
+}
+
+#home-button:hover,
+#home-button:focus,
+#home-button:visited {
+  text-decoration: none;
+  color: inherit;
+}
+
+#home-button.hidden-restart,
+#restart-button.hidden-restart {
+  display: none !important;
+}
+
 #scanlines {
     position: fixed;
     inset: 0;
