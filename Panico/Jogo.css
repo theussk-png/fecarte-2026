@@ -1,0 +1,1346 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+    cursor: url('cursor_arrow.cur'), auto;
+}
+
+body {
+    font-family: 'Dialogo', 'Special Elite', monospace;
+    background-color: #030303;
+    color: #b8a3a3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* ===== Casca externa: permite que o entalhe lateral fique visível fora
+   do #game-container (que usa overflow: hidden para arredondar o conteúdo) ===== */
+#phone-shell {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+}
+
+/* Pequena saliência decorativa na borda esquerda do quadro. */
+#frame-notch {
+    position: absolute;
+    left: -8px;
+    top: 38%;
+    width: 16px;
+    height: 15%;
+    background: #3a0000;
+    border-radius: 6px 0 0 6px;
+    z-index: 0;
+}
+
+@font-face {
+    font-family: Dialogo;
+    src: url('fonts/VT323-Regular.ttf') format('truetype');
+}
+
+/* ===== Cursores customizados: mudam conforme a interação ===== */
+#game-container {
+    cursor: url('cursor_draggable.cur'), pointer; /* área geral: clicável para avançar a fala */
+}
+
+.option-button,
+.continue-button,
+.corner-tab,
+.close-overlay,
+#phone-corner-icon,
+#audio-toggle,
+#dado-ok-btn {
+    cursor: url('cursor_finger.cur'), pointer;
+}
+
+.option-button:active,
+.continue-button:active,
+.corner-tab:active,
+.close-overlay:active,
+#audio-toggle:active,
+#dado-ok-btn:active,
+#game-container:active {
+    cursor: url('cursor_drag.cur'), pointer;
+}
+
+#game-container {
+    position: relative;
+    width: 1200px;
+    max-width: 96vw;
+    height: 660px;
+    max-height: 94vh;
+    overflow: hidden;
+    border: 3px solid #3a0000;
+    border-radius: 22px;
+    box-shadow: 0 0 30px rgba(60, 0, 0, 0.3);
+    background-color: #050505;
+    z-index: 0;
+    transition: box-shadow 0.6s ease;
+    color: #7a0f14; /* cor base herdada pelos ícones SVG (currentColor) */
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== Fundo dinâmico por "clima" da cena (sem imagens externas) ===== */
+#background {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    transition: background 1.2s ease-in-out;
+    background: radial-gradient(ellipse at 50% 30%, #0f0000 0%, #000000 75%);
+}
+
+#game-container.mood-calm #background {
+    background: radial-gradient(ellipse at 50% 30%, #0a0303 0%, #030303 80%);
+}
+
+#game-container.mood-tense #background {
+    background: radial-gradient(ellipse at 50% 25%, #1a0000 0%, #030000 75%);
+    animation: pulseTense 4s ease-in-out infinite;
+}
+
+#game-container.mood-danger #background {
+    background: radial-gradient(ellipse at 50% 20%, #2e0000 0%, #060000 70%);
+    animation: pulseDanger 1.4s ease-in-out infinite;
+}
+
+#game-container.mood-good #background {
+    background: radial-gradient(ellipse at 50% 65%, #3a0f00 0%, #100300 55%, #030000 100%);
+}
+
+#game-container.mood-bittersweet #background {
+    background: radial-gradient(ellipse at 50% 30%, #130303 0%, #030303 80%);
+}
+
+#game-container.mood-bad #background {
+    background: radial-gradient(ellipse at 50% 40%, #0f0000 0%, #000000 85%);
+}
+
+@keyframes pulseTense {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.1); }
+}
+
+@keyframes pulseDanger {
+    0%, 100% { filter: brightness(1) saturate(1); }
+    50% { filter: brightness(1.25) saturate(1.2); }
+}
+
+/* ===== Fundos dinâmicos por local (gradientes atmosféricos, paleta vermelha)
+   Inspirados no tratamento de plano de fundo de Jogos-Mortais: camadas de
+   gradientes, fontes de luz com brilho, sombras e vinheta. Sem imagens. ===== */
+#game-container.loc-sala #background {
+    background:
+        radial-gradient(ellipse at 50% 16%, rgba(120,32,32,.20), transparent 58%),
+        radial-gradient(ellipse at 16% 80%, rgba(70,0,0,.16), transparent 52%),
+        linear-gradient(180deg, #170404 0%, #0b0202 48%, #050202 100%);
+}
+#game-container.loc-cozinha #background {
+    background:
+        radial-gradient(ellipse at 50% 20%, rgba(110,26,26,.16), transparent 55%),
+        linear-gradient(180deg, #130303 0%, #0a0202 50%, #060101 100%);
+}
+#game-container.loc-garagem #background {
+    background:
+        radial-gradient(ellipse at 50% 14%, rgba(85,15,15,.14), transparent 60%),
+        linear-gradient(180deg, #0e0202 0%, #080101 55%, #040101 100%);
+}
+#game-container.loc-quarto #background {
+    background:
+        radial-gradient(ellipse at 50% 22%, rgba(125,36,36,.18), transparent 55%),
+        linear-gradient(180deg, #160404 0%, #0a0202 50%, #050202 100%);
+}
+#game-container.loc-banheiro #background {
+    background:
+        radial-gradient(ellipse at 50% 12%, rgba(95,22,22,.18), transparent 55%),
+        linear-gradient(180deg, #1c0606 0%, #0d0303 50%, #070202 100%);
+}
+#game-container.loc-rua #background {
+    background:
+        radial-gradient(ellipse at 22% 30%, rgba(125,26,26,.16), transparent 45%),
+        radial-gradient(ellipse at 80% 60%, rgba(40,0,0,.12), transparent 55%),
+        linear-gradient(180deg, #0a0202 0%, #060101 45%, #030101 100%);
+}
+#game-container.loc-porao #background {
+    background:
+        radial-gradient(ellipse at 50% 18%, rgba(75,12,12,.14), transparent 60%),
+        linear-gradient(180deg, #0c0202 0%, #070101 55%, #030101 100%);
+}
+#game-container.loc-casaRafa #background {
+    background:
+        radial-gradient(ellipse at 50% 16%, rgba(105,22,22,.16), transparent 58%),
+        linear-gradient(180deg, #140303 0%, #0a0202 50%, #050202 100%);
+}
+#game-container.loc-amanhecer #background {
+    background:
+        radial-gradient(ellipse at 50% 72%, rgba(160,62,40,.22), transparent 55%),
+        radial-gradient(ellipse at 50% 30%, rgba(60,18,18,.20), transparent 60%),
+        linear-gradient(180deg, #1c0905 0%, #130403 45%, #0a0302 100%);
+}
+
+/* ===== Cenário de cada local (só CSS, sem imagens externas) =====
+   Cada elemento fica escondido por padrão; as classes "loc-*" no
+   #game-container (definidas por LOCATIONS no Jogo.js) ligam só os
+   elementos daquele local específico. Inspirado no tratamento detalhado
+   de Jogos-Mortais: chão em perspectiva, fontes de luz com brilho e
+   falha, sombras, vinheta e adereços em camadas. Paleta vermelha mantida. */
+#scenery {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+#scenery > div {
+    display: none;
+    position: absolute;
+}
+
+/* --- Chão em perspectiva (presente em vários interiores) --- */
+.deco-floor {
+    left: -8%;
+    right: -8%;
+    bottom: -28%;
+    height: 56%;
+    transform: perspective(520px) rotateX(60deg);
+    transform-origin: top center;
+    background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,.045) 0 2px, transparent 2px 130px),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 2px, transparent 2px 100px),
+        linear-gradient(#241010, #0a0303);
+    box-shadow: inset 0 38px 60px rgba(0,0,0,.6);
+    opacity: .55;
+}
+#game-container.loc-sala .deco-floor,
+#game-container.loc-cozinha .deco-floor,
+#game-container.loc-quarto .deco-floor,
+#game-container.loc-casaRafa .deco-floor { display: block; }
+
+/* Chão de concreto (garagem / porão) */
+.deco-floor-concrete {
+    left: -8%;
+    right: -8%;
+    bottom: -28%;
+    height: 56%;
+    transform: perspective(520px) rotateX(60deg);
+    transform-origin: top center;
+    background:
+        radial-gradient(circle at 37% 35%, rgba(0,0,0,.5) 0 7px, transparent 8px),
+        radial-gradient(circle at 67% 48%, rgba(0,0,0,.42) 0 5px, transparent 6px),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.04) 0 2px, transparent 2px 150px),
+        linear-gradient(#1f1010, #070202);
+    box-shadow: inset 0 38px 60px rgba(0,0,0,.6);
+    opacity: .5;
+}
+#game-container.loc-garagem .deco-floor-concrete,
+#game-container.loc-porao .deco-floor-concrete { display: block; }
+
+/* Chão molhado da rua em perspectiva */
+.deco-floor-street {
+    left: -8%;
+    right: -8%;
+    bottom: -30%;
+    height: 58%;
+    transform: perspective(520px) rotateX(62deg);
+    transform-origin: top center;
+    background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 2px, transparent 2px 160px),
+        linear-gradient(120deg, rgba(120,20,20,.10), transparent 40%),
+        linear-gradient(#1a0808, #050101);
+    box-shadow: inset 0 38px 60px rgba(0,0,0,.65);
+    opacity: .5;
+}
+#game-container.loc-rua .deco-floor-street { display: block; }
+
+/* --- Luminária pendurada com brilho e falha (interiores) --- */
+.deco-lamp-hanging {
+    top: 0;
+    left: 50%;
+    width: 150px;
+    height: 90px;
+    transform: translateX(-50%);
+}
+.deco-lamp-hanging::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 3px;
+    height: 34px;
+    background: #1a0303;
+    transform: translateX(-50%);
+}
+.deco-lamp-hanging::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 30px;
+    width: 120px;
+    height: 26px;
+    transform: translateX(-50%) rotate(-1deg);
+    border: 5px solid #1a0303;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #2a0a0a, #3a0f0f 50%, #1f0606);
+    box-shadow: 0 0 36px rgba(150,40,40,.18);
+    animation: lampFlicker 5.7s infinite;
+}
+@keyframes lampFlicker {
+    0%, 100% { box-shadow: 0 0 36px rgba(150,40,40,.18); }
+    47% { box-shadow: 0 0 30px rgba(150,40,40,.14); }
+    49% { box-shadow: 0 0 8px rgba(150,40,40,.05); }
+    51% { box-shadow: 0 0 34px rgba(150,40,40,.16); }
+    72% { box-shadow: 0 0 22px rgba(150,40,40,.10); }
+}
+#game-container.loc-sala .deco-lamp-hanging,
+#game-container.loc-cozinha .deco-lamp-hanging,
+#game-container.loc-quarto .deco-lamp-hanging,
+#game-container.loc-casaRafa .deco-lamp-hanging { display: block; }
+
+/* --- Janela com cortinas e feixe de luar --- */
+.deco-window {
+    top: 6%;
+    left: 6%;
+    width: 190px;
+    height: 230px;
+    background:
+        radial-gradient(ellipse at 50% 30%, rgba(120,40,40,.20), transparent 70%),
+        linear-gradient(180deg, rgba(70,15,15,.30), rgba(8,0,0,.65));
+    border: 6px solid #140202;
+    box-shadow: inset 0 0 40px rgba(0,0,0,.85), 0 0 26px rgba(80,0,0,.2);
+    opacity: .6;
+}
+.deco-window::before,
+.deco-window::after {
+    content: "";
+    position: absolute;
+    background: #140202;
+}
+.deco-window::before { left: 50%; top: 0; bottom: 0; width: 6px; transform: translateX(-50%); }
+.deco-window::after { top: 50%; left: 0; right: 0; height: 6px; transform: translateY(-50%); }
+
+.deco-curtain {
+    position: absolute;
+    top: -12px;
+    width: 60px;
+    height: calc(100% + 24px);
+    background: linear-gradient(180deg, #2a0000, #0a0000);
+    opacity: .9;
+}
+.deco-curtain.left { left: -26px; clip-path: polygon(0 0, 100% 0, 55% 100%, 0 100%); }
+.deco-curtain.right { right: -26px; clip-path: polygon(0 0, 100% 0, 100% 100%, 45% 100%); }
+
+/* Feixe de luar descendo da janela */
+.deco-moonbeam {
+    top: 14%;
+    left: 7%;
+    width: 180px;
+    height: 70%;
+    background: linear-gradient(180deg, rgba(150,60,60,.12), transparent 80%);
+    transform: skewX(-8deg);
+    opacity: .5;
+    mix-blend-mode: screen;
+}
+#game-container.loc-sala .deco-window,
+#game-container.loc-sala .deco-moonbeam,
+#game-container.loc-quarto .deco-window,
+#game-container.loc-quarto .deco-moonbeam,
+#game-container.loc-cozinha .deco-window { display: block; }
+
+/* --- Porta com sombra (sala / casaRafa) --- */
+.deco-door {
+    bottom: 8%;
+    right: 8%;
+    width: 150px;
+    height: 78%;
+    border: 7px solid #160202;
+    background: linear-gradient(135deg, #1f0606, #0c0202 55%, #160404);
+    box-shadow: 22px 18px 40px rgba(0,0,0,.8);
+    opacity: .6;
+}
+.deco-door::after {
+    content: "";
+    position: absolute;
+    right: 16%;
+    top: 52%;
+    width: 12px;
+    height: 12px;
+    border: 3px solid #5a1010;
+    border-radius: 50%;
+}
+.deco-door-shadow {
+    bottom: 8%;
+    right: 8%;
+    width: 150px;
+    height: 78%;
+    transform: translateX(8px) rotate(3deg);
+    background: linear-gradient(90deg, rgba(0,0,0,.7), transparent);
+    opacity: .5;
+    z-index: 0;
+}
+#game-container.loc-sala .deco-door,
+#game-container.loc-sala .deco-door-shadow,
+#game-container.loc-casaRafa .deco-door { display: block; }
+
+/* --- Sofá (sala) --- */
+.deco-couch {
+    bottom: 14%;
+    left: 30%;
+    width: 280px;
+    height: 90px;
+    background: linear-gradient(180deg, #1f0808, #0c0303);
+    border-radius: 14px 14px 6px 6px;
+    box-shadow: 0 14px 24px rgba(0,0,0,.6), inset 0 8px 14px rgba(0,0,0,.5);
+    opacity: .5;
+}
+.deco-couch::before {
+    content: "";
+    position: absolute;
+    top: -16px;
+    left: 14px;
+    right: 14px;
+    height: 30px;
+    border-radius: 14px;
+    background: #180505;
+}
+#game-container.loc-sala .deco-couch { display: block; }
+
+/* --- Bancada da cozinha --- */
+.deco-counter {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20%;
+    background:
+        linear-gradient(180deg, #1a0707, #070202);
+    border-top: 4px solid #100202;
+    box-shadow: 0 -10px 24px rgba(0,0,0,.5), inset 0 6px 12px rgba(0,0,0,.5);
+    opacity: .65;
+}
+.deco-counter::after {
+    content: "";
+    position: absolute;
+    top: -3px;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #2a0a0a, #1a0505, #2a0a0a);
+}
+#game-container.loc-cozinha .deco-counter { display: block; }
+
+/* --- Armário suspenso (cozinha) --- */
+.deco-cabinet {
+    top: 14%;
+    left: 8%;
+    width: 220px;
+    height: 80px;
+    border: 4px solid #140202;
+    background: linear-gradient(180deg, #180505, #0a0202);
+    box-shadow: 0 10px 20px rgba(0,0,0,.6);
+    opacity: .5;
+}
+.deco-cabinet::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    transform: translateX(-50%);
+    background: #0a0202;
+}
+#game-container.loc-cozinha .deco-cabinet { display: block; }
+
+/* --- Porta da garagem --- */
+.deco-garage-door {
+    top: 6%;
+    left: 50%;
+    width: 70%;
+    height: 60%;
+    transform: translateX(-50%);
+    background:
+        repeating-linear-gradient(0deg, transparent 0 38px, rgba(0,0,0,.5) 38px 42px),
+        linear-gradient(180deg, #1a0606, #0a0202);
+    border: 6px solid #140202;
+    box-shadow: inset 0 0 50px rgba(0,0,0,.8);
+    opacity: .45;
+}
+#game-container.loc-garagem .deco-garage-door { display: block; }
+
+/* --- Carro na garagem --- */
+.deco-car {
+    bottom: 8%;
+    right: 6%;
+    width: 200px;
+    height: 80px;
+    background: linear-gradient(180deg, #1a0505, #060101);
+    border-radius: 28px 28px 8px 8px / 36px 36px 8px 8px;
+    box-shadow: 0 12px 22px rgba(0,0,0,.65);
+    opacity: .6;
+}
+.deco-car::before,
+.deco-car::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #0a0000;
+}
+.deco-car::before { left: 20px; }
+.deco-car::after { right: 20px; }
+#game-container.loc-garagem .deco-car { display: block; }
+
+/* --- Mancha de óleo (garagem) --- */
+.deco-oil-stain {
+    bottom: 10%;
+    left: 14%;
+    width: 160px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(60,10,10,.4), transparent 70%);
+    transform: perspective(400px) rotateX(60deg);
+    opacity: .5;
+}
+#game-container.loc-garagem .deco-oil-stain { display: block; }
+
+/* --- Cama (quarto) --- */
+.deco-bed {
+    bottom: 4%;
+    left: 6%;
+    width: 240px;
+    height: 100px;
+    background: linear-gradient(180deg, #1a0808, #090303);
+    border-radius: 10px;
+    box-shadow: 0 14px 24px rgba(0,0,0,.6), inset 0 10px 18px rgba(0,0,0,.5);
+    opacity: .55;
+}
+.deco-bed::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 14px;
+    width: 60px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba(120,60,60,.18);
+}
+#game-container.loc-quarto .deco-bed { display: block; }
+
+/* --- Guarda-roupa (quarto) --- */
+.deco-wardrobe {
+    bottom: 14%;
+    right: 10%;
+    width: 130px;
+    height: 64%;
+    border: 6px solid #140202;
+    background: linear-gradient(135deg, #1a0606, #0a0202 60%, #140404);
+    box-shadow: 0 16px 30px rgba(0,0,0,.7);
+    opacity: .5;
+}
+.deco-wardrobe::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    width: 6px;
+    height: 18px;
+    background: #3a0f0f;
+    border-radius: 3px;
+    transform: translateX(-50%);
+}
+#game-container.loc-quarto .deco-wardrobe { display: block; }
+
+/* --- Azulejos (banheiro) --- */
+.deco-tiles {
+    inset: 0 0 28% 0;
+    opacity: .5;
+    background:
+        linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)),
+        repeating-linear-gradient(90deg, transparent 0 88px, rgba(60,0,0,.4) 89px 93px),
+        repeating-linear-gradient(0deg, transparent 0 58px, rgba(60,0,0,.4) 59px 63px),
+        linear-gradient(160deg, #1c0707, #0a0202);
+}
+#game-container.loc-banheiro .deco-tiles { display: block; }
+
+/* --- Espelho rachado (banheiro) --- */
+.deco-mirror {
+    top: 12%;
+    right: 10%;
+    width: 130px;
+    height: 170px;
+    border: 7px solid #140202;
+    background:
+        linear-gradient(150deg, transparent 0 31%, rgba(160,60,60,.18) 32% 33%, transparent 34% 52%, rgba(160,60,60,.12) 53% 54%, transparent 55%),
+        linear-gradient(160deg, #2a0a0a, #140404 50%, #0a0202);
+    box-shadow: 0 14px 30px rgba(0,0,0,.7);
+    opacity: .6;
+}
+.deco-mirror::after {
+    content: "";
+    position: absolute;
+    top: 30%;
+    left: 15%;
+    width: 70%;
+    height: 2px;
+    background: #8d1818;
+    box-shadow: 0 0 10px rgba(150,20,20,.6);
+    transform: rotate(-8deg);
+}
+#game-container.loc-banheiro .deco-mirror { display: block; }
+
+/* --- Pia (banheiro) --- */
+.deco-sink {
+    right: 8%;
+    bottom: 24%;
+    width: 200px;
+    height: 110px;
+    opacity: .55;
+}
+.deco-sink::before {
+    content: "";
+    position: absolute;
+    left: 5%;
+    bottom: 0;
+    width: 90%;
+    height: 56px;
+    border: 4px solid #1a0505;
+    border-radius: 8px 8px 34px 34px;
+    background: linear-gradient(#3a1414, #1a0606 45%, #0a0202);
+    box-shadow: inset 0 -12px 18px #050101, 0 14px 26px rgba(0,0,0,.7);
+}
+.deco-sink::after {
+    content: "";
+    position: absolute;
+    left: 47%;
+    top: 0;
+    width: 28px;
+    height: 60px;
+    border: 7px solid #2a0a0a;
+    border-bottom: 0;
+    border-radius: 18px 18px 0 0;
+}
+#game-container.loc-banheiro .deco-sink { display: block; }
+
+/* --- Ralo (banheiro) --- */
+.deco-drain {
+    left: 30%;
+    bottom: 16%;
+    width: 70px;
+    height: 70px;
+    transform: rotateX(62deg);
+    border: 7px solid #140404;
+    border-radius: 50%;
+    background: repeating-linear-gradient(90deg, #2a0a0a 0 4px, #0a0202 4px 10px);
+    box-shadow: inset 0 0 16px #000, 0 8px 18px rgba(0,0,0,.7);
+    opacity: .5;
+}
+#game-container.loc-banheiro .deco-drain { display: block; }
+
+/* --- Poste de rua com brilho --- */
+.deco-streetlamp {
+    bottom: 0;
+    left: 12%;
+    width: 5px;
+    height: 68%;
+    background: #100202;
+    opacity: .7;
+}
+.deco-streetlamp::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 26px;
+    height: 14px;
+    background: #100202;
+    border-radius: 4px 4px 10px 10px;
+}
+.deco-streetlamp::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    width: 150px;
+    height: 220px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at top, rgba(140,24,24,.20), transparent 70%);
+    clip-path: polygon(50% 0, 0 100%, 100% 100%);
+    animation: lampFlicker 6.4s infinite;
+}
+#game-container.loc-rua .deco-streetlamp { display: block; }
+
+/* --- Neblina (rua) --- */
+.deco-fog {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background: linear-gradient(180deg, transparent, rgba(60,10,10,.18) 60%, rgba(40,0,0,.22));
+    opacity: .6;
+}
+#game-container.loc-rua .deco-fog { display: block; }
+
+/* --- Casas distantes (rua) --- */
+.deco-distant-houses {
+    bottom: 30%;
+    left: 0;
+    right: 0;
+    height: 22%;
+    background:
+        linear-gradient(90deg,
+            transparent 0 8%, #0a0202 8% 16%, transparent 16% 22%,
+            #0c0303 22% 33%, transparent 33% 40%, #0a0202 40% 50%,
+            transparent 50% 58%, #0c0303 58% 70%, transparent 70% 78%,
+            #0a0202 78% 88%, transparent 88% 100%);
+    clip-path: polygon(0 100%, 8% 60%, 16% 100%, 22% 40%, 33% 100%, 40% 55%, 50% 100%, 58% 35%, 70% 100%, 78% 60%, 88% 100%, 100% 70%, 100% 100%);
+    opacity: .5;
+}
+#game-container.loc-rua .deco-distant-houses { display: block; }
+
+/* --- Canos no porão --- */
+.deco-pipes {
+    top: 8%;
+    left: 0;
+    right: 0;
+    height: 14%;
+    background:
+        repeating-linear-gradient(90deg, #1a0606 0 14px, #0a0202 14px 22px),
+        linear-gradient(180deg, #140404, #0a0202);
+    border-bottom: 3px solid #0a0202;
+    box-shadow: 0 6px 14px rgba(0,0,0,.6);
+    opacity: .45;
+}
+.deco-pipes::after {
+    content: "";
+    position: absolute;
+    left: 18%;
+    bottom: -40px;
+    width: 14px;
+    height: 80px;
+    background: repeating-linear-gradient(180deg, #1a0606 0 14px, #0a0202 14px 22px);
+    border-radius: 0 0 4px 4px;
+}
+#game-container.loc-porao .deco-pipes { display: block; }
+
+/* --- Pilar de madeira (porão) --- */
+.deco-pillar {
+    bottom: 14%;
+    left: 16%;
+    width: 26px;
+    height: 70%;
+    background: linear-gradient(90deg, #1a0606, #0c0303 50%, #160505);
+    box-shadow: 6px 0 16px rgba(0,0,0,.6);
+    opacity: .5;
+}
+#game-container.loc-porao .deco-pillar { display: block; }
+
+/* --- Quadro de fusíveis (porão) --- */
+.deco-fusebox {
+    right: 12%;
+    top: 24%;
+    width: 90px;
+    height: 120px;
+    border: 6px solid #160404;
+    background: linear-gradient(135deg, #2a0a0a, #140404);
+    box-shadow: 0 14px 26px rgba(0,0,0,.65);
+    transform: rotate(-2deg);
+    opacity: .55;
+}
+.deco-fusebox::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    width: 18px;
+    height: 40px;
+    border: 2px solid #0a0202;
+    background: #050101;
+}
+#game-container.loc-porao .deco-fusebox { display: block; }
+
+/* --- Escada (casa do Rafa) --- */
+.deco-stairs {
+    bottom: 0;
+    right: 4%;
+    width: 210px;
+    height: 250px;
+    opacity: .45;
+    background:
+        linear-gradient(135deg,
+            transparent 0 10%, #140404 10% 20%,
+            transparent 20% 30%, #140404 30% 40%,
+            transparent 40% 50%, #140404 50% 60%,
+            transparent 60% 70%, #140404 70% 80%);
+    box-shadow: -10px 0 24px rgba(0,0,0,.5);
+}
+#game-container.loc-casaRafa .deco-stairs { display: block; }
+
+/* --- Corredor (casa do Rafa) --- */
+.deco-hallway {
+    top: 10%;
+    left: 50%;
+    width: 30%;
+    height: 70%;
+    transform: translateX(-50%);
+    background:
+        linear-gradient(180deg, rgba(0,0,0,.4), transparent 40%),
+        linear-gradient(90deg, #0a0202, #140404 50%, #0a0202);
+    border: 5px solid #140202;
+    box-shadow: inset 0 0 50px rgba(0,0,0,.8);
+    opacity: .4;
+}
+#game-container.loc-casaRafa .deco-hallway { display: block; }
+
+/* --- Janela do amanhecer --- */
+.deco-dawn-window {
+    top: 8%;
+    left: 50%;
+    width: 240px;
+    height: 200px;
+    transform: translateX(-50%);
+    background:
+        radial-gradient(ellipse at 50% 80%, rgba(200,110,70,.30), transparent 70%),
+        linear-gradient(180deg, #2a1208, #160604 60%, #0a0302);
+    border: 6px solid #140202;
+    box-shadow: 0 0 50px rgba(180,80,50,.18), inset 0 0 40px rgba(0,0,0,.6);
+    opacity: .7;
+}
+.deco-dawn-window::before,
+.deco-dawn-window::after {
+    content: "";
+    position: absolute;
+    background: #140202;
+}
+.deco-dawn-window::before { left: 50%; top: 0; bottom: 0; width: 6px; transform: translateX(-50%); }
+.deco-dawn-window::after { top: 50%; left: 0; right: 0; height: 6px; transform: translateY(-50%); }
+#game-container.loc-amanhecer .deco-dawn-window { display: block; }
+
+/* --- Luz da alvorada --- */
+.deco-dawn-light {
+    top: 30%;
+    left: 0;
+    right: 0;
+    height: 60%;
+    background: linear-gradient(180deg, transparent, rgba(180,80,50,.10) 60%, transparent);
+    opacity: .6;
+    mix-blend-mode: screen;
+}
+#game-container.loc-amanhecer .deco-dawn-light { display: block; }
+
+/* --- Silhuetas de árvores (amanhecer) --- */
+.deco-trees {
+    bottom: 28%;
+    left: 0;
+    right: 0;
+    height: 24%;
+    background:
+        linear-gradient(90deg,
+            transparent 0 6%, #0a0202 6% 10%, transparent 10% 18%,
+            #0a0202 18% 23%, transparent 23% 30%, #0a0202 30% 36%,
+            transparent 36% 44%, #0a0202 44% 49%, transparent 49% 56%,
+            #0a0202 56% 61%, transparent 61% 70%, #0a0202 70% 75%,
+            transparent 75% 84%, #0a0202 84% 89%, transparent 89% 100%);
+    clip-path: polygon(0 100%, 6% 30%, 10% 100%, 18% 50%, 23% 100%, 30% 20%, 36% 100%, 44% 45%, 49% 100%, 56% 35%, 61% 100%, 70% 55%, 75% 100%, 84% 25%, 89% 100%, 100% 60%, 100% 100%);
+    opacity: .55;
+}
+#game-container.loc-amanhecer .deco-trees { display: block; }
+
+/* ===== Estática real cobrindo o fundo do jogo (imgs/static.gif) ===== */
+#static-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background-image: url('imgs/static.gif');
+    background-repeat: repeat;
+    background-size: 260px 260px;
+    opacity: 0.05;
+    mix-blend-mode: screen;
+    transition: opacity 0.5s ease;
+}
+
+#game-container.event-call #static-overlay {
+    opacity: 0.32;
+}
+
+#game-container.event-danger #static-overlay {
+    opacity: 0.22;
+}
+
+/* Vinheta */
+#vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.9) 100%);
+}
+
+/* Tremor quando algo perigoso acontece */
+/* (o tremor de event-danger agora é aplicado em Efeitos.css via --a-shake,
+   para poder conviver com a animação da moldura vermelha) */
+
+@keyframes shake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-6px, 3px); }
+    40% { transform: translate(6px, -3px); }
+    60% { transform: translate(-4px, 2px); }
+    80% { transform: translate(4px, -2px); }
+}
+
+/* ===== Banner do topo: só aparece durante uma ligação ===== */
+#top-banner {
+    position: relative;
+    z-index: 20;
+    display: none;
+    background: #3a0000;
+    color: #d9a3a3;
+    text-align: center;
+    font-family: 'Special Elite', monospace;
+    letter-spacing: 4px;
+    padding: 6px;
+    font-size: 13px;
+    border-bottom: 1px solid #2a0000;
+}
+
+#game-container.event-call #top-banner {
+    display: block;
+    animation: bannerFlash 1s infinite;
+}
+
+@keyframes bannerFlash {
+    0%, 100% { background: #3a0000; }
+    50% { background: #560000; }
+}
+
+/* ===== Abas nos cantos (Itens / Finais) ===== */
+.corner-tab {
+    position: absolute;
+    top: 34px;
+    z-index: 30;
+    background: rgba(10, 0, 0, 0.85);
+    border: 1px solid #4d0000;
+    color: #b88a8a;
+    font-family: 'Special Elite', monospace;
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 0 0 10px 10px;
+    transition: none;
+}
+
+.corner-tab.left {
+    left: 24px;
+    border-top: none;
+}
+
+.corner-tab.right {
+    right: 24px;
+    border-top: none;
+}
+
+
+/* ===== Overlays (Itens / Finais) ===== */
+.overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    background: rgba(0,0,0,0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.overlay.hidden {
+    display: none;
+}
+
+.overlay-panel {
+    position: relative;
+    background: #080000;
+    border: 1px solid #4d0000;
+    border-radius: 8px;
+    padding: 24px 30px;
+    max-width: 520px;
+    width: 85%;
+    max-height: 80%;
+    overflow-y: auto;
+    box-shadow: 0 0 24px rgba(100,0,0,0.2);
+}
+
+/* Moldura de telefone (imgs/Moldura_Telefone.png) como marca d'água nas
+   listas de Itens e Finais, reforçando o tema "ligação" da história. */
+.overlay-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url('imgs/Moldura_Telefone.png');
+    background-repeat: no-repeat;
+    background-position: center 30px;
+    background-size: 180px auto;
+    opacity: 0.07;
+    filter: brightness(0) invert(1);
+    pointer-events: none;
+}
+
+.overlay-panel h2,
+.overlay-panel #itens-list,
+.overlay-panel #endings-list,
+.overlay-panel .close-overlay {
+    position: relative;
+    z-index: 1;
+}
+
+.overlay-panel h2 {
+    color: #8a4a4a;
+    font-family: 'Special Elite', monospace;
+    letter-spacing: 2px;
+    margin-top: 0;
+    text-align: center;
+    font-size: 1.3em;
+}
+
+.list-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 4px;
+    border-bottom: 1px solid #1a0000;
+    font-size: 15px;
+}
+
+.list-entry svg {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.list-entry.locked {
+    color: #4a3a3a;
+}
+
+.list-entry.unlocked {
+    color: #b88a8a;
+}
+
+.close-overlay {
+    display: block;
+    margin: 18px auto 0 auto;
+    background: #4d0000;
+    border: 1px solid #6e0000;
+    color: #d9baba;
+    padding: 8px 22px;
+    font-family: 'Special Elite', monospace;
+    letter-spacing: 2px;
+}
+
+.close-overlay:hover {
+    background: #6e0000;
+}
+
+/* ===== Área principal: retrato à esquerda, escolhas à direita, fala embaixo ===== */
+#content-area {
+    position: relative;
+    z-index: 3;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 30px 16px 30px;
+    gap: 14px;
+    overflow: hidden;
+    min-height: 0;
+}
+
+#stage-row {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 24px;
+}
+
+/* Tamanho fixo e igual para qualquer sprite (Sofia ou Duda) */
+#npc-portrait {
+    position: relative;
+    flex: 0 0 340px;
+    width: 340px;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#npc-portrait-img {
+    max-width: 340px;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+    display: none;
+}
+
+#options-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    overflow-y: auto;
+    z-index: 10;
+    padding-right: 4px;
+}
+
+.option-button {
+    background-color: rgba(10, 0, 0, 0.85);
+    border: 1px solid #4d0000;
+    color: #a88a8a;
+    padding: 14px 20px;
+    font-size: large;
+    text-align: left;
+    font-family: 'Special Elite', monospace;
+    opacity: 0.85;
+    transition: none; /* hover "seco": troca de estado instantânea */
+}
+
+/* (estado :hover dos botões: ver Efeitos.css) */
+
+.continue-button {
+    background-color: #4d0000;
+    border: 1px solid #6e0000;
+    color: #d9baba;
+    padding: 15px 18px;
+    font-size: large;
+    text-align: center;
+    letter-spacing: 3px;
+    font-family: 'Special Elite', monospace;
+    align-self: center;
+    min-width: 220px;
+    animation: pulseBtn 1.8s ease-in-out infinite;
+    transition: none;
+}
+
+@keyframes pulseBtn {
+    0%, 100% { box-shadow: 0 0 5px rgba(100,0,0,0.35); }
+    50% { box-shadow: 0 0 12px rgba(120,0,0,0.6); }
+}
+
+/* ===== Bloco inferior: nome sobrepondo a caixa de fala ===== */
+#dialogue-wrap {
+    position: relative;
+    flex: 0 0 auto;
+    z-index: 3;
+}
+
+/* ===== Nome (pill sobreposta ao canto superior esquerdo da caixa de fala) ===== */
+#name-tag {
+    position: absolute;
+    top: 0;
+    left: 20px;
+    transform: translateY(-55%);
+    z-index: 6;
+    background: #2a0000;
+    color: #c9a3a3;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 13px;
+    padding: 6px 20px;
+    border-radius: 20px;
+    border: 1px solid #4d0000;
+    display: inline-block;
+    min-height: 1em;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+#name-tag:empty {
+    display: none;
+}
+
+/* ===== Caixa de fala ===== */
+#text-box {
+    position: relative;
+    z-index: 3;
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 90px;
+    background: linear-gradient(180deg, rgba(12,0,0,0.94), rgba(3,0,0,0.98));
+    border: 1px solid #3a0000;
+    border-radius: 10px;
+    padding: 22px 100px 16px 90px;
+    font-size: x-large;
+}
+
+#dialogue-text {
+    margin: 0;
+    line-height: 1.35;
+    color: #ab9494;
+    white-space: pre-line;
+}
+
+/* ===== Ícone decorativo de telefone no canto da caixa de fala
+   (imgs/Telefone.png). Um leve halo claro (drop-shadow) garante que o
+   ícone preto continue visível sobre o fundo escuro, sem alterar a cor
+   original do arquivo enviado. ===== */
+#phone-corner-icon {
+    position: absolute;
+    bottom: 14px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+    z-index: 7;
+    opacity: 0.92;
+    transition: opacity 0.3s, filter 0.3s;
+}
+
+#phone-corner-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 0 rgba(0,0,0,0))
+            drop-shadow(0 1px 3px rgba(216,166,166,0.9))
+            drop-shadow(0 -1px 3px rgba(216,166,166,0.9))
+            drop-shadow(1px 0 3px rgba(216,166,166,0.9))
+            drop-shadow(-1px 0 3px rgba(216,166,166,0.9));
+}
+
+#game-container.event-call #phone-corner-icon {
+    opacity: 1;
+    animation: bannerFlash 1s infinite;
+}
+
+#game-container.event-call #phone-corner-icon img {
+    filter: drop-shadow(0 0 6px #ff4d4d) drop-shadow(0 0 10px #ff4d4d);
+}
+
+/* ===== Botão de música de fundo, ancorado no canto da caixa de fala ===== */
+#audio-toggle {
+    position: absolute;
+    bottom: 18px;
+    left: 16px;
+    width: 40px;
+    height: 40px;
+    z-index: 7;
+    background: rgba(10, 0, 0, 0.7);
+    border: 1px solid #3a0000;
+    border-radius: 50%;
+    color: #a88a8a;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+#audio-toggle:hover {
+    background: #2a0000;
+    box-shadow: 0 0 10px rgba(100,0,0,0.5);
+}
+
+/* ===== Resultado do dado: fica na tela até o jogador clicar OK ===== */
+#dado-resultado {
+    font-size: 20px;
+    color: #e8d5d5;
+    background-color: rgba(35, 0, 0, 0.98);
+    border: 3px solid #6e0000;
+    padding: 26px 34px;
+    border-radius: 14px;
+    text-align: center;
+    max-width: 420px;
+    box-shadow: 0 0 40px rgba(100, 0, 0, 0.7);
+    animation: dadoPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes dadoPulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(100,0,0,0.6); }
+    50% { box-shadow: 0 0 48px rgba(140,0,0,0.85); }
+}
+
+#dado-titulo {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #d9a3a3;
+    margin-bottom: 12px;
+}
+
+#dado-explicacao {
+    font-size: 0.8em;
+    color: #8a7373;
+    line-height: 1.4;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #3a0000;
+}
+
+#dado-numero {
+    font-size: 1.15em;
+    margin-bottom: 10px;
+}
+
+#dado-numero strong {
+    color: #f0c9c9;
+    font-size: 1.3em;
+}
+
+#dado-veredito {
+    font-size: 1.4em;
+    font-weight: bold;
+    margin-bottom: 18px;
+}
+
+#dado-ok-btn {
+    background: #4d0000;
+    border: 1px solid #8a1010;
+    color: #f0d9d9;
+    padding: 10px 32px;
+    font-size: 1em;
+    font-family: 'Special Elite', monospace;
+    letter-spacing: 2px;
+    border-radius: 6px;
+}
+
+#dado-ok-btn:hover {
+    background: #6e0000;
+}
+
+.item-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.item-tag svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ===== Sem seleção azul de texto/imagem dentro do jogo =====
+   Cliques duplos/triplos ou arrastar o mouse não "marcam" mais nada.
+   Só afeta a seleção visual: cliques, hover e o resto seguem iguais. */
+#phone-shell,
+#phone-shell * {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#phone-shell img {
+    -webkit-user-drag: none;   /* impede arrastar a imagem do personagem */
+    user-drag: none;
+}
+
+#phone-shell ::selection,
+#phone-shell::selection {
+    background: transparent;
+}

@@ -1,0 +1,217 @@
+/* =====================================================================
+   EFEITOS: transições de escolha, CRT/VHS dinâmico, moldura vermelha
+   reativa e hover "seco/analógico". Carregado DEPOIS de Jogo.css.
+   Lógica em Efeitos.js.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. Camada de efeitos (escurecer, ruído, rasgo de fita, flash)
+   --------------------------------------------------------------------- */
+#scanlines {
+    position: absolute;
+    inset: 0;
+    z-index: 35;
+    pointer-events: none;
+    opacity: 0.045;                     /* quase imperceptível no normal */
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.95) 0 1px, transparent 1px 3px);
+    transition: opacity 0.25s;
+}
+#scanlines.hot { opacity: 0.22; }       /* momentos importantes */
+
+#fx-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 45;                        /* acima do jogo, abaixo dos overlays (50) */
+    pointer-events: none;
+    overflow: hidden;
+}
+.fxe { position: absolute; opacity: 0; }
+
+#fx-dim {
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,.35) 0%, rgba(0,0,0,.92) 70%, #000 100%);
+    transition-property: opacity;
+    transition-timing-function: steps(4, end);   /* escurece "em degraus", meio analógico */
+}
+#fx-dim.full { background: #000; }
+
+#fx-noise {
+    inset: 0;
+    background: url('imgs/static.gif') repeat 0 0 / 260px 260px;
+    mix-blend-mode: screen;
+}
+
+/* Faixa de "tracking" da fita: um rasgo horizontal de estática */
+#fx-tear {
+    left: -4%;
+    right: -4%;
+    top: 0;
+    height: 14px;
+    background: url('imgs/static.gif') repeat 0 0 / 200px 200px;
+    mix-blend-mode: screen;
+}
+
+/* Barra clara que rola pela tela nos momentos importantes */
+#fx-roll {
+    left: 0;
+    right: 0;
+    top: -20%;
+    height: 18%;
+    background: linear-gradient(180deg, transparent, rgba(255,110,110,.10), transparent);
+}
+#fx-roll.go { animation: crtRoll 0.55s linear 1; }
+@keyframes crtRoll {
+    0%   { top: -20%; opacity: 1; }
+    100% { top: 105%; opacity: 1; }
+}
+
+#fx-flash {
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(215,20,20,.85) 0%, rgba(110,0,0,.92) 100%);
+}
+
+/* Quadro com falha de cor/deslocamento (o filtro é definido no HTML) */
+#content-area.glitch,
+#scenery.glitch {
+    filter: url(#f-rgb);
+}
+
+/* ---------------------------------------------------------------------
+   2. Botão: pressionado, "afundado", pisca e apaga os outros
+   --------------------------------------------------------------------- */
+.option-button .btn-label,
+.continue-button .btn-label {
+    display: block;
+    pointer-events: none;
+}
+
+.option-button.pressed,
+.continue-button.pressed {
+    transform: translateY(1px);
+    background-color: #140000;
+    border-color: #7a0f0f;
+    color: #8c7070;
+    opacity: 1;
+    box-shadow: inset 0 2px 6px #000;
+    animation: none;
+    text-shadow: none;
+}
+.option-button.pressed .btn-label,
+.continue-button.pressed .btn-label {
+    transform: translateY(1px);          /* o texto afunda um pouco mais que o botão */
+}
+
+.btn-blink {
+    animation: btnBlink 0.15s steps(1, end) 2 !important;
+}
+@keyframes btnBlink {
+    0%   { background-color: #8a1212; color: #fff0f0; border-color: #c02020; }
+    50%  { background-color: #120000; color: #5a4040; border-color: #4d0000; }
+    100% { background-color: #8a1212; color: #fff0f0; border-color: #c02020; }
+}
+
+/* Depois da escolha: as outras opções apagam, nada mais responde ao mouse */
+#options-container.locked { pointer-events: none; }
+#options-container.locked .option-button:not(.chosen),
+#options-container.locked .continue-button:not(.chosen) {
+    opacity: 0.22;
+    transition: opacity 0.09s linear;
+}
+
+/* ---------------------------------------------------------------------
+   3. Moldura vermelha reativa
+      normal → quase apagada | tensão → pulsa devagar
+      perigo → brilha e treme | sobrenatural → apaga, flash, volta
+   --------------------------------------------------------------------- */
+#game-container {
+    border-color: #2a0000;
+    box-shadow: 0 0 16px rgba(70, 0, 0, 0.18);
+    transition: border-color 0.6s ease, box-shadow 0.6s ease;
+    animation: var(--a-base, none), var(--a-super, none), var(--a-shake, none);
+}
+
+#game-container.frame-tension { --a-base: frameTension 4.2s ease-in-out infinite; }
+#game-container.frame-danger  { --a-base: frameDanger 1.3s linear infinite; }
+#game-container.frame-super   { --a-super: frameSuper 1.7s linear 1; }
+#game-container.event-danger  { --a-shake: shake 0.5s; }
+
+@keyframes frameTension {
+    0%, 100% { border-color: #2a0000; box-shadow: 0 0 14px rgba(70,0,0,.16); }
+    50%      { border-color: #5e0808; box-shadow: 0 0 30px rgba(120,0,0,.42); }
+}
+
+/* Brilho alto + tremulação (oscilação irregular, não senoidal) */
+@keyframes frameDanger {
+    0%   { border-color: #8a1010; box-shadow: 0 0 26px rgba(150,0,0,.50); }
+    7%   { border-color: #a81414; box-shadow: 0 0 38px rgba(190,0,0,.75); }
+    9%   { border-color: #6c0e0e; box-shadow: 0 0 20px rgba(120,0,0,.35); }
+    12%  { border-color: #a01212; box-shadow: 0 0 34px rgba(180,0,0,.70); }
+    40%  { border-color: #8a1010; box-shadow: 0 0 28px rgba(150,0,0,.52); }
+    55%  { border-color: #b01818; box-shadow: 0 0 42px rgba(200,0,0,.80); }
+    57%  { border-color: #620c0c; box-shadow: 0 0 18px rgba(110,0,0,.32); }
+    60%  { border-color: #a01414; box-shadow: 0 0 36px rgba(180,0,0,.70); }
+    100% { border-color: #8a1010; box-shadow: 0 0 26px rgba(150,0,0,.50); }
+}
+
+/* Quase preto → flash vermelho → volta */
+@keyframes frameSuper {
+    0%   { border-color: #2a0000; box-shadow: 0 0 16px rgba(70,0,0,.18); }
+    14%  { border-color: #050000; box-shadow: 0 0 0 rgba(0,0,0,0); }
+    56%  { border-color: #050000; box-shadow: 0 0 0 rgba(0,0,0,0); }
+    58%  { border-color: #ff2a2a; box-shadow: 0 0 64px rgba(255,20,20,.95); }
+    62%  { border-color: #3a0000; box-shadow: 0 0 10px rgba(80,0,0,.30); }
+    66%  { border-color: #d01818; box-shadow: 0 0 44px rgba(220,10,10,.80); }
+    100% { border-color: #3c0505; box-shadow: 0 0 20px rgba(90,0,0,.30); }
+}
+
+/* O entalhe lateral acompanha o estado da moldura */
+#frame-notch { transition: background 0.6s ease; background: #240000; }
+#phone-shell:has(#game-container.frame-tension) #frame-notch { background: #4a0606; }
+#phone-shell:has(#game-container.frame-danger)  #frame-notch { background: #7a0d0d; }
+
+/* ---------------------------------------------------------------------
+   4. Hover seco/analógico (sem gradiente, sem glow, sem transição suave)
+      borda mais vermelha · 1–2px de brilho no texto · desloca 1px
+   --------------------------------------------------------------------- */
+.option-button:hover {
+    opacity: 1;
+    background-color: #260000;
+    border-color: #8f1414;
+    color: #e6cccc;
+    text-shadow: 0 0 2px rgba(235, 190, 190, 0.65);
+    transform: translateX(1px);
+    box-shadow: none;
+}
+
+.continue-button:hover {
+    background-color: #5c0000;
+    border-color: #a01818;
+    color: #f0dcdc;
+    text-shadow: 0 0 2px rgba(240, 200, 200, 0.65);
+    transform: translateX(1px);
+    box-shadow: none;
+    animation: none;
+}
+
+.corner-tab:hover {
+    background: #260000;
+    border-color: #8f1414;
+    color: #e6cccc;
+    text-shadow: 0 0 2px rgba(235, 190, 190, 0.6);
+    box-shadow: none;
+}
+
+.close-overlay:hover,
+#dado-ok-btn:hover {
+    border-color: #a01818;
+    text-shadow: 0 0 2px rgba(240, 200, 200, 0.6);
+}
+
+/* ---------------------------------------------------------------------
+   5. Acessibilidade: sem tremor/flash para quem pede menos movimento
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    #game-container { animation: none !important; }
+    #fx-roll.go { animation: none; }
+    .btn-blink { animation: none !important; }
+}
